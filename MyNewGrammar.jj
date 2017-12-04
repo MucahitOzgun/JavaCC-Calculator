@@ -1,0 +1,104 @@
+options
+{
+  static = true;
+}
+
+PARSER_BEGIN(MyNewGrammar)
+package mainPackage;
+
+public class MyNewGrammar
+{
+   static int myValue=1;
+  public static void main(String args []) throws ParseException
+  {
+    try { 
+   int result = new MyNewGrammar(new java.io.StringReader("3,5+A*3^2*A")).S();
+        System.out.println(result); }
+        catch(Exception e)
+        { System.out.println("Hatali Giris Yaptiniz.");}
+  }
+}
+
+PARSER_END(MyNewGrammar)
+
+SKIP:  { " " | "\t" | "\n" | "\r"                    }
+TOKEN: { "(" | ")" | "+" | "*" | "-" | "/" | "!" | "^" | "," | "X" | <NUM: (["0"-"9"])+>| <ALFABE: (["A"-"Z"])+> }
+
+int S(): {int sum;}
+{
+  sum=T() 
+  {return sum;}
+}
+int T(): {int sum, x;}
+{
+  sum=B()
+  ("*" x=B() {sum *= x;} )* {return sum;}
+}
+
+int B(): {int sum, x;}
+{
+  sum=E()
+  ("/" x=E() {sum /= x;} )* {return sum;}
+}
+
+int E(): {int sum, x;}
+{
+  sum=A()
+ ("+" x=A() {sum += x;} )*{return sum;}
+  
+  
+}
+int A(): {int sum,x; }
+{
+  sum=D()
+  ("-" x=D() {sum -= x;} )*{return sum;}
+}
+
+int D(): {int sum,x; }
+{
+  sum=G()
+	
+  ("^" x=G()
+  {int memory=sum;
+  
+ 
+  for( int i=x ; i >1;i--)
+  sum *=memory;
+
+  } )*{return sum;}
+}
+
+int G(): {int sum,tool;}
+{
+  sum=FIND()
+	
+  ("!" 
+  {tool=1;
+  for( int i=sum; i >1;i--)
+  		tool *=i;
+  		 sum=tool;
+  } )*{return sum;}
+}
+
+int FIND(): {int sum;}
+{
+  
+  sum=F()
+  ( ","
+  {myValue=sum;
+	 sum=F();
+  }  )*{return sum;}
+}
+
+
+
+
+int F(): {int x; Token n;}
+{
+  n=<NUM> {return Integer.parseInt(n.image);}
+|
+  "(" x=T() ")" {return x;}
+|
+   n=<ALFABE> {return myValue;}
+
+}
